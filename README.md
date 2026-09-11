@@ -11,6 +11,16 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 > [!NOTE]
 > This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
 
+> [!IMPORTANT]
+> **This is the [Joshua8-AI fork](https://github.com/Joshua8-AI/revit-mcp-server) of [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server).** The project is LuDattilo's work; this fork exists only to make **Revit 2027** work end-to-end when building from source, and the changes are offered upstream as [PR #8](https://github.com/LuDattilo/revit-mcp-server/pull/8) (for [issue #5](https://github.com/LuDattilo/revit-mcp-server/issues/5)).
+>
+> What differs from upstream:
+> - `server/deploy-addins.mjs` — seeds `server/build/` and `package.json` into an already-deployed add-in, so a from-source install no longer fails the "Revit MCP Switch" health check with *"index.js not found"*; fails fast if the server hasn't been built.
+> - `.github/workflows/release.yml` — the Revit 2027 build is no longer `continue-on-error` and a release must carry all five ZIPs. `.github/workflows/ci.yml` builds on pull requests.
+> - `INSTALLATION.md` — corrects the claim that `server/build/` is committed (it is gitignored) and documents the from-source deploy order.
+>
+> **Revit 2027 status:** verified from source only — `dotnet build -c "Release R27"` on .NET SDK 10, plugin loads in Revit 2027, all 138 tools respond against a live model. **No pre-built 2027 ZIP exists yet** (upstream's releases stop at 2026 and this fork has published none), so the one-line installer and the Releases links below do **not** work for 2027 — use [INSTALLATION.md → Build from Source](INSTALLATION.md#method-2-build-from-source). Also note `npx -y mcp-server-for-revit` installs a stale 1.0.0 from npm; register the locally built `server/build/index.js` instead.
+
 ## Key Features
 
 - **124 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
