@@ -6,7 +6,7 @@
 
 ---
 
-mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 138 tools covering project info, model analysis, element creation, batch operations, data export, and more.
+mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 147 tools covering project info, model analysis, element creation, site/shared coordinates, MEP, batch operations, data export (including IFC), and more.
 
 > [!NOTE]
 > This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
@@ -19,11 +19,11 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 > - `.github/workflows/release.yml` — the Revit 2027 build is no longer `continue-on-error` and a release must carry all five ZIPs. `.github/workflows/ci.yml` builds on pull requests.
 > - `INSTALLATION.md` — corrects the claim that `server/build/` is committed (it is gitignored) and documents the from-source deploy order.
 >
-> **Revit 2027 status:** verified from source only — `dotnet build -c "Release R27"` on .NET SDK 10, plugin loads in Revit 2027, all 138 tools respond against a live model. **No pre-built 2027 ZIP exists yet** (upstream's releases stop at 2026 and this fork has published none), so the one-line installer and the Releases links below do **not** work for 2027 — use [INSTALLATION.md → Build from Source](INSTALLATION.md#method-2-build-from-source). Also note `npx -y mcp-server-for-revit` installs a stale 1.0.0 from npm; register the locally built `server/build/index.js` instead.
+> **Revit 2027 status:** verified from source only — `dotnet build -c "Release R27"` on .NET SDK 10, plugin loads in Revit 2027, all 138 original tools respond against a live model (the 9 site/coordinates/MEP/IFC tools added later — `get_project_location`, `set_shared_coordinates`, `create_toposolid`, `get_toposolids`, `create_pipe`, `create_duct`, `get_mep_systems`, `get_mep_elements`, `export_ifc` — are covered by Revit 2027 API tests but not yet live-verified over MCP; see [TESTING.md](TESTING.md)). **No pre-built 2027 ZIP exists yet** (upstream's releases stop at 2026 and this fork has published none), so the one-line installer and the Releases links below do **not** work for 2027 — use [INSTALLATION.md → Build from Source](INSTALLATION.md#method-2-build-from-source). Also note `npx -y mcp-server-for-revit` installs a stale 1.0.0 from npm; register the locally built `server/build/index.js` instead.
 
 ## Key Features
 
-- **124 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
+- **147 MCP tools** — project info, model health, clash detection, element CRUD, site/shared coordinates, toposolids, pipes/ducts, batch operations, data export (PDF/DWG/IFC/CSV)
 - **Revit 2023, 2024, 2025, 2026, 2027** — fully tested on all five versions
 - **Language-independent** — works with any Revit UI language (English, Italian, French, German, etc.) using BuiltInCategory resolution
 - **Built-in Claude chat panel** — dockable panel inside Revit with direct AI access (Anthropic API, extended thinking enabled)
@@ -195,7 +195,7 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
 
-## Supported Tools (124)
+## Supported Tools (147)
 
 ### Project & Model Info
 
@@ -307,6 +307,22 @@ All tools work across all versions. The command set uses compile-time constants 
 | `purge_unused` | Identify and remove unused families, types, materials |
 | `cad_link_cleanup` | Audit and clean up CAD imports and links |
 | `add_shared_parameter` | Add shared parameters to categories |
+
+### Site, Coordinates, MEP & IFC
+
+All lengths in mm, angles in degrees. Write tools run in one transaction named after the tool and accept `dryRun` (do the work, report it, roll back).
+
+| Tool | Description |
+| ---- | ----------- |
+| `get_project_location` | Survey point, project base point, angle to true north, internal→shared transform, site latitude/longitude |
+| `set_shared_coordinates` | Pin an internal point to shared E/W, N/S, elevation and angle to true north (`ProjectLocation.SetProjectPosition`) |
+| `create_toposolid` | Toposolid from (x,y,z) survey points, internal or shared coordinates (Revit 2024+) |
+| `get_toposolids` | Toposolids with type, level, bounding box, vertex count and optional vertex points |
+| `create_pipe` | Straight pipes with diameter, piping system type and level (batch, all-or-nothing) |
+| `create_duct` | Straight round or rectangular ducts with system type and level (batch, all-or-nothing) |
+| `get_mep_systems` | Piping and mechanical systems with classification, element count and total length |
+| `get_mep_elements` | Pipes, ducts, fittings and accessories with system and size |
+| `export_ifc` | IFC2x3 / IFC4 / IFC4x3 export with shared or internal site placement, optional view filter and base quantities |
 
 ### Advanced
 
@@ -421,7 +437,7 @@ mcp-servers-for-revit/
 ├── mcp-servers-for-revit.sln    # Combined solution (plugin + commandset + tests)
 ├── command.json                 # Command set manifest
 ├── server/                      # MCP server (TypeScript) - tools exposed to AI clients
-│   └── src/tools/               # One .ts file per tool (138 tools)
+│   └── src/tools/               # One .ts file per tool (147 tools)
 ├── plugin/                      # Revit add-in (C#) - TCP bridge + chat panel
 │   └── UI/                      # Dockable chat panel (XAML + code-behind)
 ├── commandset/                  # Command implementations (C#) - Revit API operations
