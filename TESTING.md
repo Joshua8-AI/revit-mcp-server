@@ -2,6 +2,38 @@
 
 How the Revit 2027 from-source path is verified, and the last recorded results.
 
+## Node server suite (no Revit needed — runs on hosted CI)
+
+```
+cd server
+npm ci
+npm run build:check   # tsc over src/ and tests/
+npm test              # vitest run
+```
+
+Last result (2026-09-26, `feature/node-contract-tests`, Node 24 on Windows 11):
+**7 files, 1450 passed / 0 failed, ~7 s.** CI (`ci.yml` job `server-tests`) runs the same
+three commands on `ubuntu-latest` and `windows-latest` for every PR and push.
+
+| file | tests | what it covers |
+|---|---|---|
+| `tests/registration.test.ts` | 8 | real `McpServer` + `registerTools()`: no swallowed registration errors, each tool registered once, `register.ts` list == `src/tools/*.ts` == registered names, descriptions/schemas present; `plugin/tool_schemas.json` and `tool-schemas.txt` equal a live `tools/list` (server↔plugin drift) |
+| `tests/tool_contracts.test.ts` | 1385 | table-driven over **every** registered tool (138): schema-generated full and required-only inputs send exactly one command with the expected name and every field passed through; invalid input (missing required / wrong type) rejected via a real MCP client and never sent; Revit error, connection failure and null/undefined/string/`{}`/array replies give a well-formed MCP result, never a throw; `command.json` ⇔ C# `CommandName`s ⇔ tools |
+| `tests/socket_client.test.ts` | 11 | `RevitClientConnection` vs a fake plugin socket: JSON-RPC framing, chunked and out-of-order responses, junk lines, error replies, command timeout, disconnects |
+| `tests/connection_manager.test.ts` | 17 | `mcp-port.txt` discovery (8080 → 8081–8089 slide, newest year first, invalid files, `REVIT_MCP_PORT`), end-to-end slide to the first free port, refused connection + backoff, recovery mid-retry, no retry on timeout / Revit error, concurrent calls serialised, mutex release, no leaked timer |
+| `tests/database.test.ts` | 9 | sql.js store under a temp HOME: schema, deferred save to disk, project upsert, metadata, rooms batch/order/join, zero area, stats |
+| `tests/utils.test.ts`, `tests/token_logger.test.ts` | 17 + 3 | errorUtils, suggestions, responseCompactor, compactTool helpers, tokenLogger |
+
+**Adding a tool:** it is discovered automatically; the contract suite fails with the tool's
+name until it has an entry in `server/tests/fixtures/toolFixtures.ts` — usually just
+`my_tool: {},` (add `command`, `renamed`, `notForwarded`, `fixedParams` or `input` only if
+the handler deviates). Regenerate the schema files with
+`node esbuild.config.mjs && node generate-tool-schemas.mjs` (not `npm run build`, which
+also deploys into the live Revit add-in folder).
+
+Tests never touch real machine state: `tests/setup.ts` points `HOME`/`USERPROFILE`/`APPDATA`
+at a temp dir, and the socket tests use fake servers on loopback.
+
 ## Offline (Revit installed but not running)
 
 | check | command | last result (2026-09-11, `joshua8-main`) |
