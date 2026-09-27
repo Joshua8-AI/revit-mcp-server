@@ -73,9 +73,9 @@ created from `English\Default-Multi-Discipline_Metric.rte`. What they establish:
   `(500000., 4000000., 100000.)` for `useSharedCoordinates: true` and `(0., 0., 0.)` for
   `false`; IFC4 and IFC2X3 FILE_SCHEMA headers are as requested.
 
-Not yet done for these tools: **live verification over MCP** (plugin loaded in a running
-Revit 2027, called through the server). The C# command classes, JSON parameter binding and
-the Node tool wrappers are therefore compiled but not exercised end-to-end.
+Live verification on Revit 2027.2 is recorded under "Live" below. After the
+`FailureCollector` fix the SiteMep suite is **16 passed** (adds the overlapping-floor
+warning test), and the Node suite is **1540 passed** with the nine tools' fixtures.
 
 Gotcha found while writing them: a generic test helper constrained to a Revit type
 (`static string FirstName<T>() where T : Element`) makes Nice3point's injector fail for the
@@ -102,11 +102,39 @@ exits 0 with "no plugin folders found"; plugin without command set → warning; 
 |---|---|---|
 | Both servers see the instance | official `get_running_revit_instances`; `revit-write get_project_info` | same pid, Snowdon Towers Sample Architectural |
 | Write round-trip | `create_level` (no plan views) → official `query_model` for it → `delete_element` → official `query_model` again | created id 3327602, found by official server, deleted, 0 found, 18 levels remain |
-| Site / coordinates / MEP / IFC tools | `get_project_location`; `set_shared_coordinates` dryRun then real; `create_toposolid` (shared); `get_toposolids`; `create_pipe` / `create_duct` dryRun then real; `get_mep_systems`; `get_mep_elements`; `export_ifc` dryRun then real | **pending** — not yet run live |
+| Site / coordinates / MEP / IFC tools | see the 2026-09-26 table below | passed after one fix (modal warning dialog) |
 | Port slide | hold `127.0.0.1:8080` with a dummy listener, toggle the switch off/on | plugin bound 8081, `mcp-port.txt`=8081, server followed it |
 
 The official Autodesk read-only server stalls (>120 s) while Revit has a dialog open
 and recovers when it is dismissed — documented behaviour, not a fault in this repo.
+
+### Site / coordinates / MEP / IFC tools, live on Revit 2027.2 (2026-09-26)
+
+Add-in built from `joshua8-main` (Release R27) and copied into
+`%APPDATA%\Autodesk\Revit\Addins\2027`; commands sent straight to the plugin on 8080
+(newline-delimited JSON-RPC, the same wire path the Node server uses; the Node layer is
+covered by the contract suite). Models: scratch copies of the 2027 samples
+`Snowdon Towers Sample Site.rvt` and `Snowdon Towers Sample Plumbing.rvt`.
+
+| tool | result |
+|---|---|
+| `get_project_location` (Site) | Default Site, 40.0224 N / 79.8867 W, PBP 26.0156° to true north |
+| `set_shared_coordinates` | dryRun rolled back; +1000 mm E / 30° committed and read back exactly; restore read back exactly |
+| `get_toposolids` / `get_mep_systems` / `get_mep_elements` | 11 toposolids (Site); 71 systems / 3,051 pipes (Plumbing), counts match the official server |
+| `create_toposolid` dryRun (Site, shared coords) | 5 points, rolled back, < 1 s |
+| `create_toposolid` real (Site) | **bug:** "Highlighted toposolid and floor overlap" opened a modal dialog at commit; the external event could not finish, and every later command (including `get_project_info`) timed out until the dialog was clicked. Fixed in `f6c3058` (`FailureCollector`: warnings returned in `warnings`, errors roll back); Revit test `CreateToposolid_OverlappingFloor_ReturnsWarningInsteadOfDialog` |
+| `set_shared_coordinates` after the fix (via the bridge) | Revit's "survey point is outside the current coordinate reference system" came back in `warnings`, no dialog |
+| `create_toposolid` after the fix (via the bridge, 403 points) | committed in ~0.2 s; "Highlighted toposolids overlap" returned in `warnings`, no dialog |
+| `create_pipe` dryRun / real (Plumbing) | 2" Domestic Cold Water, new system; 5,000 mm |
+| `create_duct` real (Plumbing) | 10" round Exhaust Air |
+| `export_ifc` IFC4, `useSharedCoordinates: true` (Site) | 7.4 MB in 13.6 s; IfcSite placement (1370151.795, 258247.976, 780.5) ft = the model's shared coordinates, rotation 26.0156°, `IFCPROJECTEDCRS` EPSG:2272 |
+| `delete_element` of the test elements | 4 deleted (note: `dryRun` defaults to true) |
+
+Official Autodesk read-only server, same session: `get_running_revit_instances` and
+`query_model` fine (now also list the 4 `OST_RvtLinks` instances);
+`get_element_data` with `parametersOutputType: "SpecificParameters"` always fails with
+"SpecificParameterNames must be provided…" whether the names are sent camelCase or
+PascalCase — an Autodesk preview bug; `KeyParameters` works.
 
 ## Known upstream noise
 
