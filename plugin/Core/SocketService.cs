@@ -402,7 +402,8 @@ namespace revit_mcp_plugin.Core
             JToken token;
             try { token = result is JToken jt ? jt : (result == null ? null : JToken.FromObject(result)); }
             catch { return result; }
-            if (token is not JObject obj) return result;
+            var obj = token as JObject;
+            if (obj == null) return result;
             var dialogs = DialogGuard.Drain();
             if (dialogs.Count == 0) return result;
             obj["_revitDialogs"] = dialogs;

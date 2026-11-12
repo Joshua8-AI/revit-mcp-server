@@ -75,7 +75,8 @@ namespace revit_mcp_plugin.Core
 
         private static void AutoStartOnIdling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
         {
-            if (sender is not UIApplication uiApp) return;
+            var uiApp = sender as UIApplication;
+            if (uiApp == null) return;
             uiApp.Idling -= AutoStartOnIdling;
             try
             {
