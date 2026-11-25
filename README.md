@@ -19,7 +19,7 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 > - `.github/workflows/release.yml` — the Revit 2027 build is no longer `continue-on-error` and a release must carry all five ZIPs. `.github/workflows/ci.yml` builds on pull requests.
 > - `INSTALLATION.md` — corrects the claim that `server/build/` is committed (it is gitignored) and documents the from-source deploy order.
 >
-> **Revit 2027 status:** verified from source only — `dotnet build -c "Release R27"` on .NET SDK 10, plugin loads in Revit 2027, all 138 original tools respond against a live model (the 9 site/coordinates/MEP/IFC tools added later — `get_project_location`, `set_shared_coordinates`, `create_toposolid`, `get_toposolids`, `create_pipe`, `create_duct`, `get_mep_systems`, `get_mep_elements`, `export_ifc` — are covered by Revit 2027 API tests but not yet live-verified over MCP; see [TESTING.md](TESTING.md)). **No pre-built 2027 ZIP exists yet** (upstream's releases stop at 2026 and this fork has published none), so the one-line installer and the Releases links below do **not** work for 2027 — use [INSTALLATION.md → Build from Source](INSTALLATION.md#method-2-build-from-source). Also note `npx -y mcp-server-for-revit` installs a stale 1.0.0 from npm; register the locally built `server/build/index.js` instead.
+> **Revit 2027 status:** verified from source only — `dotnet build -c "Release R27"` on .NET SDK 10, plugin loads in Revit 2027, all 138 original tools respond against a live model (the 9 site/coordinates/MEP/IFC tools added later — `get_project_location`, `set_shared_coordinates`, `create_toposolid`, `get_toposolids`, `create_pipe`, `create_duct`, `get_mep_systems`, `get_mep_elements`, `export_ifc` — are covered by Revit 2027 API tests but not yet live-verified over MCP; see [TESTING.md](TESTING.md)). **Pre-built ZIPs for Revit 2023–2027** are on this fork's [v2.3.0 release](https://github.com/Joshua8-AI/revit-mcp-server/releases/tag/v2.3.0), so the one-line installer and the Releases links below now work; the 2027 ZIP is built by CI and its contents checked, but the from-source build above is what was run live in Revit 2027. Do **not** use `npx -y mcp-server-for-revit`: that npm package belongs to the original project and is a stale 1.0.0. Point your MCP client at the server bundled in the ZIP instead (see [Configure the MCP server](#2-configure-the-mcp-server)).
 
 ## Key Features
 
@@ -145,26 +145,38 @@ Addins/2025/
 
 ### 2. Configure the MCP server
 
-**Claude Code**
+The ZIP already contains the MCP server and a portable Node.js, so nothing comes from npm. (The one-line installer in Option A sets up Claude Desktop for you.) Both live under:
 
-```bash
-claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
+```
+%APPDATA%\Autodesk\Revit\Addins\<year>\revit_mcp_plugin\Commands\RevitMCPCommandSet\server\
+├── runtime\node.exe
+└── build\index.js
+```
+
+**Claude Code** (PowerShell; replace `2026` with your Revit version)
+
+```powershell
+$srv = "$env:APPDATA\Autodesk\Revit\Addins\2026\revit_mcp_plugin\Commands\RevitMCPCommandSet\server"
+claude mcp add revit-mcp -- "$srv\runtime\node.exe" "$srv\build\index.js"
 ```
 
 **Claude Desktop**
 
-Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_config.json`:
+Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_config.json` (replace `<you>` with your Windows user name and `2026` with your Revit version):
 
 ```json
 {
     "mcpServers": {
-        "mcp-server-for-revit": {
-            "command": "npx",
-            "args": ["-y", "mcp-server-for-revit"]
+        "revit-mcp": {
+            "command": "C:\\Users\\<you>\\AppData\\Roaming\\Autodesk\\Revit\\Addins\\2026\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\runtime\\node.exe",
+            "args": ["C:\\Users\\<you>\\AppData\\Roaming\\Autodesk\\Revit\\Addins\\2026\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\build\\index.js"]
         }
     }
 }
 ```
+
+> [!NOTE]
+> Built from source instead? There is no bundled `node.exe`: use `node` (Node.js 18+) as the command and the repo's `server\build\index.js` as the argument. Do **not** use `npx -y mcp-server-for-revit`; that npm package is a stale 1.0.0 from the original project.
 
 ### 3. Start Revit
 

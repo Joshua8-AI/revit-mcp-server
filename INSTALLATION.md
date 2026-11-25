@@ -217,23 +217,26 @@ Or manually edit `%APPDATA%\Claude\claude_desktop_config.json`:
 ```json
 {
     "mcpServers": {
-        "mcp-server-for-revit": {
-            "command": "npx",
-            "args": ["-y", "mcp-server-for-revit"]
+        "revit-mcp": {
+            "command": "C:\\Users\\<you>\\AppData\\Roaming\\Autodesk\\Revit\\Addins\\2026\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\runtime\\node.exe",
+            "args": ["C:\\Users\\<you>\\AppData\\Roaming\\Autodesk\\Revit\\Addins\\2026\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\build\\index.js"]
         }
     }
 }
 ```
 
-Restart Claude Desktop and verify that the hammer icon appears at the bottom right.
+Replace `<you>` with your Windows user name and `2026` with your Revit version. Restart Claude Desktop and verify that the hammer icon appears at the bottom right.
 
 ### For Claude Code (CLI)
 
-Run the following command to register the MCP server:
+Run the following in PowerShell to register the bundled MCP server (replace `2026` with your Revit version):
 
-```bash
-claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
+```powershell
+$srv = "$env:APPDATA\Autodesk\Revit\Addins\2026\revit_mcp_plugin\Commands\RevitMCPCommandSet\server"
+claude mcp add revit-mcp -- "$srv\runtime\node.exe" "$srv\build\index.js"
 ```
+
+> **Built from source?** There is no bundled `node.exe`: use `node` (Node.js 18+) as the command and the repo's `server\build\index.js` as the argument. Do **not** use `npx -y mcp-server-for-revit`; that npm package is a stale 1.0.0 from the original project.
 
 ### For Other MCP Clients (Cline, Continue, etc.)
 

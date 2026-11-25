@@ -9,22 +9,25 @@ This package is the MCP server component of [mcp-servers-for-revit](https://gith
 
 ## Setup
 
-**Claude Code**
+This server is not installed from npm (the `mcp-server-for-revit` package there is a stale 1.0.0 from the original project). It ships inside each [release ZIP](https://github.com/Joshua8-AI/revit-mcp-server/releases), together with a portable Node.js, under `%APPDATA%\Autodesk\Revit\Addins\<year>\revit_mcp_plugin\Commands\RevitMCPCommandSet\server\`.
 
-```bash
-claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
+**Claude Code** (PowerShell; replace `2026` with your Revit version)
+
+```powershell
+$srv = "$env:APPDATA\Autodesk\Revit\Addins\2026\revit_mcp_plugin\Commands\RevitMCPCommandSet\server"
+claude mcp add revit-mcp -- "$srv\runtime\node.exe" "$srv\build\index.js"
 ```
 
 **Claude Desktop**
 
-Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_config.json`:
+Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_config.json` (replace `<you>` and `2026`):
 
 ```json
 {
     "mcpServers": {
-        "mcp-server-for-revit": {
-            "command": "npx",
-            "args": ["-y", "mcp-server-for-revit"]
+        "revit-mcp": {
+            "command": "C:\\Users\\<you>\\AppData\\Roaming\\Autodesk\\Revit\\Addins\\2026\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\runtime\\node.exe",
+            "args": ["C:\\Users\\<you>\\AppData\\Roaming\\Autodesk\\Revit\\Addins\\2026\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\build\\index.js"]
         }
     }
 }
@@ -32,7 +35,9 @@ Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_co
 
 Restart Claude Desktop. When you see the hammer icon, the MCP server is connected.
 
-## Supported Tools (124)
+Built from source? Run `npm install && npm run build` here, then use `node` (Node.js 18+) as the command and this folder's `build\index.js` as the argument.
+
+## Supported Tools (147)
 
 See the [full tool list](https://github.com/Joshua8-AI/revit-mcp-server#supported-tools-147) in the main README for the complete catalog organized by category:
 
