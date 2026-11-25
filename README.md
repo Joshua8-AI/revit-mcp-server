@@ -12,12 +12,17 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 > This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
 
 > [!IMPORTANT]
-> **This is the [Joshua8-AI fork](https://github.com/Joshua8-AI/revit-mcp-server) of [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server).** The project is LuDattilo's work; this fork exists only to make **Revit 2027** work end-to-end when building from source, and the changes are offered upstream as [PR #8](https://github.com/LuDattilo/revit-mcp-server/pull/8) (for [issue #5](https://github.com/LuDattilo/revit-mcp-server/issues/5)).
+> **This is the [Joshua8-AI fork](https://github.com/Joshua8-AI/revit-mcp-server) of [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server).** The project is LuDattilo's work (all credit for it goes to LuDattilo and the contributors under [Acknowledgements](#acknowledgements)); this fork makes **Revit 2027** work end-to-end and adds the fixes and tools below.
 >
-> What differs from upstream:
-> - `server/deploy-addins.mjs` — seeds `server/build/` and `package.json` into an already-deployed add-in, so a from-source install no longer fails the "Revit MCP Switch" health check with *"index.js not found"*; fails fast if the server hasn't been built.
-> - `.github/workflows/release.yml` — the Revit 2027 build is no longer `continue-on-error` and a release must carry all five ZIPs. `.github/workflows/ci.yml` builds on pull requests.
-> - `INSTALLATION.md` — corrects the claim that `server/build/` is committed (it is gitignored) and documents the from-source deploy order.
+> **Every plugin, command-set and server change in this fork has been submitted upstream** as pull requests to [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server/pulls). The upstream author may or may not choose to incorporate them. Until then this fork carries them:
+> - [#8](https://github.com/LuDattilo/revit-mcp-server/pull/8): ship the Revit 2027 release asset and fix the from-source server deploy (for [issue #5](https://github.com/LuDattilo/revit-mcp-server/issues/5))
+> - [#9](https://github.com/LuDattilo/revit-mcp-server/pull/9): a Node test suite for the MCP server (contract tests for every tool) and four bugs it found
+> - [#10](https://github.com/LuDattilo/revit-mcp-server/pull/10): site, shared-coordinate, toposolid, MEP and IFC tools (9 tools)
+> - [#18](https://github.com/LuDattilo/revit-mcp-server/pull/18): opt-in unattended sessions (plugin auto-start, dialog and failure handling, optional local signing)
+> - [#19](https://github.com/LuDattilo/revit-mcp-server/pull/19): `send_code_to_revit` reports rolled-back transactions as failures; connect to 127.0.0.1
+> - [#20](https://github.com/LuDattilo/revit-mcp-server/pull/20): a worked `send_code_to_revit` example (a bridge in one call) and IFC/Navisworks notes
+>
+> Not submitted, because they only concern this fork: its version and releases, links and install instructions pointing to this repo, this note, the test records in [TESTING.md](TESTING.md), and a CI job that runs the server tests on pushes to this fork.
 >
 > **Revit 2027 status:** verified from source only — `dotnet build -c "Release R27"` on .NET SDK 10, plugin loads in Revit 2027, all 138 original tools respond against a live model (the 9 site/coordinates/MEP/IFC tools added later — `get_project_location`, `set_shared_coordinates`, `create_toposolid`, `get_toposolids`, `create_pipe`, `create_duct`, `get_mep_systems`, `get_mep_elements`, `export_ifc` — are covered by Revit 2027 API tests but not yet live-verified over MCP; see [TESTING.md](TESTING.md)). **Pre-built ZIPs for Revit 2023–2027** are on this fork's [v2.3.0 release](https://github.com/Joshua8-AI/revit-mcp-server/releases/tag/v2.3.0), so the one-line installer and the Releases links below now work; the 2027 ZIP is built by CI and its contents checked, but the from-source build above is what was run live in Revit 2027. Do **not** use `npx -y mcp-server-for-revit`: that npm package belongs to the original project and is a stale 1.0.0. Point your MCP client at the server bundled in the ZIP instead (see [Configure the MCP server](#2-configure-the-mcp-server)).
 
