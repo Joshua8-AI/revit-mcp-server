@@ -1,4 +1,4 @@
-[![Cover Image](./assets/cover.png?v=2)](https://github.com/LuDattilo/revit-mcp-server)
+[![Cover Image](./assets/cover.png?v=2)](https://github.com/Joshua8-AI/revit-mcp-server)
 
 # mcp-servers-for-revit
 
@@ -83,7 +83,7 @@ flowchart LR
 Open PowerShell and paste this command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/LuDattilo/revit-mcp-server/main/scripts/install.ps1 | iex"
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/Joshua8-AI/revit-mcp-server/joshua8-main/scripts/install.ps1 | iex"
 ```
 
 The script:
@@ -108,7 +108,7 @@ The script:
 #### Option B: Manual install
 
 > [!IMPORTANT]
-> **Download the pre-built ZIP from the [Releases](https://github.com/LuDattilo/revit-mcp-server/releases) page.** Do NOT clone the repository or copy the source code — the source contains `.cs` files, not compiled `.dll` files. The plugin will not work without compiled binaries.
+> **Download the pre-built ZIP from the [Releases](https://github.com/Joshua8-AI/revit-mcp-server/releases) page.** Do NOT clone the repository or copy the source code — the source contains `.cs` files, not compiled `.dll` files. The plugin will not work without compiled binaries.
 
 Extract the ZIP to:
 
@@ -365,7 +365,7 @@ The Revit plugin includes a dockable chat panel that connects directly to the An
 
 1. Close Revit
 2. Delete the old installation from `%AppData%\Autodesk\Revit\Addins\<version>\`
-3. Download the correct ZIP from the [Releases](https://github.com/LuDattilo/revit-mcp-server/releases) page
+3. Download the correct ZIP from the [Releases](https://github.com/Joshua8-AI/revit-mcp-server/releases) page
 4. Extract and verify the folder structure matches the one shown in [Step 1](#1-install-the-revit-plugin)
 5. Restart Revit
 

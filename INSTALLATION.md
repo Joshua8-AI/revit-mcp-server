@@ -71,7 +71,7 @@ dotnet --list-sdks
 
 ### Step 1: Download the Release
 
-1. Go to the [Releases](https://github.com/LuDattilo/revit-mcp-server/releases) page
+1. Go to the [Releases](https://github.com/Joshua8-AI/revit-mcp-server/releases) page
 2. Download the ZIP matching your Revit version:
    - `mcp-servers-for-revit-vX.Y.Z-Revit2023.zip`
    - `mcp-servers-for-revit-vX.Y.Z-Revit2024.zip`
@@ -129,8 +129,8 @@ Addins/<version>/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/LuDattilo/revit-mcp-server.git
-cd mcp-servers-for-revit
+git clone https://github.com/Joshua8-AI/revit-mcp-server.git
+cd revit-mcp-server
 ```
 
 ### Step 2: Build the MCP Server
@@ -336,7 +336,7 @@ If everything works, a dialog will appear in Revit with the message.
 ### From Source
 
 ```bash
-cd mcp-servers-for-revit
+cd revit-mcp-server
 git pull
 cd server && npm install && npm run build && cd ..
 dotnet build mcp-servers-for-revit.sln -c "Debug R26"
